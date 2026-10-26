@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyMaster </title> <!--The Title of my Learning game-->
+    <script src="https://cdn.tailwindcss.com"></script> <!--Using a css library-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        html,
+        body {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        body {
+
+            margin: 0;
+            /*Fixed my margin*/
+
+            background-image: url('forest.png');
+            /*The location of my bg imagee*/
+
+            background-size: cover;
+            /*Covering my Page that it will fit in all device*/
+
+            background-position: center;
+            /*Centering my BG image*/
+
+
+            background-repeat: no-repeat;
+            /*It was making my image a lots of time, so i fixed it to no repeat*/
+
+            background-attachment: fixed;
+            /*No movement for image, its fixed*/
+
+        }
+
+        .py-card {
+
+            /*Fixing card's size*/
+            backdrop-filter: blur(16px);
+            /*Making semi transparent glassy look color*/
+
+            box-shadow: 0 12px 40px 0 rgba(242, 241, 244, 0.269);
+            /*background shadow of the box, just for looks*/
+        }
+
+        .option-btn {
+            /*Buttons of choices of answer*/
+            background: rgba(51, 65, 101, 0.811);
+            /*Background of the Button div*/
+
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            /*Border of the button*/
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            /*Adding the hover effect for my button*/
+        }
+
+        .option-btn.correct {
+            background: rgba(38, 188, 93, 0.25) !important;
+            /*Background of button  if my Choose was correct*/
+            border-color: #0bf661 !important;
+            /*Border of button  if my Choose was correct*/
+        }
+
+        .option-btn.incorrect {
+            /*It will become red if wrong answer*/
+            background: rgba(227, 15, 15, 0.256) !important;
+            /*Background of button  if my Choose was not correct*/
+            border-color: #ef4444 !important;
+            /*Border of button  if my Choose was not correct*/
+        }
+
+        .code-scroll {
+            max-height: 100px;
+            overflow-y: auto;
+            /*Maximum Height for showing Question code*/
+        }
+
+        /* Short screen (under 500px height) auto-fit styles */
+        @media (max-height: 550px) {
+            .min-h-screen {
+                min-height: 100% !important;
+            }
+
+            #startScreen button {
+                font-size: 2rem !important;
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+            }
+
+            .py-card {
+                padding: 0.75rem !important;
+            }
+
+            #optionsContainer {
+                gap: 0.35rem !important;
+            }
+
+            .option-btn {
+                padding: 0.4rem 0.6rem !important;
+                font-size: 0.75rem !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="relative flex flex-col justify-between h-full w-full select-none overflow-x-hidden">
+
+    <div class="relative z-10 flex flex-col justify-between h-full w-full max-w-5xl mx-auto px-4 py-2">
+
+        <header class="w-full flex items-center justify-between h-10 mb-1">
+            <div class="flex items-center cursor-pointer" onclick="goToStartScreen()">
+                <!--The Logo used in top left, also act as a button to go home-->
+            </div>
+
+            <div id="headerStats" class="flex items-center space-x-4 opacity-0 transition-opacity duration-300">
+                <div
+                    class="px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/50 text-xs font-code text-slate-300">
+                    Question: <span id="questionCounterHeader" class="text-amber-400 font-semibold">1 / 8</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 flex items-center justify-center relative my-auto py-1">
+
+            <!-- Start Screen, That looks amazing also with the image -->
+            <main id="startScreen" class="flex flex-col items-center justify-center text-center my-auto">
+                <div class="flex items-center justify-center mb-2">
+                </div>
+
+                <button onclick="startQuiz()"
+                    class="font-code text-2xl sm:text-4xl font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer px-4 py-2 focus:outline-none drop-shadow-[0_0_15px_rgba(10, 35, 90, 0.4)]">
+                    Try to play </button>
+
+            </main>
+
+            <!-- Quiz Screen, its too simple. -->
+            <main id="quizScreen" class="hidden w-full max-w-2xl my-auto">
+                <div class="py-card rounded-2xl p-4 relative">
+
+                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-code text-xs uppercase tracking-wider text-slate-400">Progress</span>
+                            <span id="questionCounter" class="font-code font-bold text-amber-400 text-xs md:text-sm">1 /
+                                8</span>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-regular fa-clock text-slate-400 text-xs"></i>
+                            <span id="timerDisplay"
+                                class="font-code font-bold text-slate-200 text-xs md:text-sm">20s</span>
+                            <!--Fixed timer of 20s each Question-->
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <span class="font-code text-xs uppercase tracking-wider text-slate-400">Score</span>
+                            <!--shows scores-->
+                            <span id="scoreDisplay" class="font-code font-bold text-sky-500 text-xs md:text-sm">0</span>
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-slate-800 h-1.5 rounded-full mb-3 overflow-hidden">
+                        <div id="progressBar"
+                            class="bg-gradient-to-r from-blue-500 to-yellow-400 h-full w-0 transition-all duration-300">
+                        </div>
+                    </div>
+
+                    <h2 id="questionText" class="text-xs md:text-sm font-semibold text-slate-100 mb-2 leading-snug">
+                        Wait a second...
+                    </h2>
+
+                    <div id="codeContainer"
+                        class="hidden mb-2 rounded-lg bg-[#090a0f] border border-slate-800 p-2 font-code text-xs text-emerald-400 code-scroll">
+                        <pre><code id="codeSnippet" class="whitespace-pre"></code></pre>
+                    </div>
+
+                    <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-800/80">
+                        <button onclick="goToStartScreen()"
+                            class="text-slate-400 hover:text-slate-200 font-code text-xs flex items-center space-x-2 transition">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Leave</span> <!--if anyone found it so hard-->
+                        </button>
+
+                        <button id="nextBtn" onclick="nextQuestion()" disabled
+                            class="px-4 py-1.5 rounded-lg bg-slate-800 text-slate-500 font-code text-xs font-semibold transition flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-500 hover:text-slate-950">
+                            <span>Let's Go</span>
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </main>
+
+            <!-- Results Screen, Result screen is so simple -->
+            <main id="resultsScreen" class="hidden w-full max-w-md my-auto">
+                <div class="py-card rounded-2xl p-4 text-center relative overflow-hidden">
+
+                    <h2 class="text-xl font-bold mb-1 text-slate-100">Quiz Completed!</h2>
+                    <p id="rankTitle" class="font-code text-sm text-amber-400 font-semibold mb-2">Python Master</p>
+
+                    <div class="my-2 flex justify-center items-center">
+                        <div
+                            class="relative w-20 h-20 flex items-center justify-center rounded-full bg-slate-900 border-4 border-slate-800">
+                            <div class="text-center">
+                                <span id="finalScore"
+                                    class="block font-code text-xl font-bold text-slate-100">0/8</span>
+                                <span id="finalPercentage" class="block font-code text-[10px] text-slate-400 mt-0.5">0%
+                                    Correct</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center gap-3 mt-3">
+                        <button onclick="startQuiz()"
+                            class="px-4 py-1.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-code font-bold text-xs transition shadow-lg shadow-yellow-500/20">
+                            Try Again <!--Or Play Again-->
+                        </button>
+                        <button onclick="goToStartScreen()"
+                            class="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-code font-bold text-xs transition border border-slate-700">
+                            Main Menu <!--Back to home-->
+                        </button>
+                    </div>
+                </div>
+            </main>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        const questionBank = [ /*The List of total Questions*/
+            {
+                question: 'Which built-in Python function displays text in the terminal?',
+                code: null,
+                options: ['echo()', 'console.log()', 'print()', 'write()'],
+                answer: 2
+            },
+            {
+                question: 'How do you create a variable with the integer value 5 in Python?',
+                code: null,
+                options: ['int x = 5', 'x = 5', 'var x = 5', 'let x = 5'],
+                answer: 1
+            },
+            {
+                question: 'Which operator is used to calculate the remainder of a division (modulo)?',
+                code: null,
+                options: ['%', '/', '//', '**'],
+                answer: 0
+            },
+            {
+                question: 'What is the output of 3 * 3 in Python?',
+                code: 'print(3 * 3)',
+                options: ['6', '9', '27', '33'],
+                answer: 1
+            },
+            {
+                question: 'Which keyword is used to define a custom function in Python?',
+                code: null,
+                options: ['function', 'func', 'def', 'define'],
+                answer: 2
+            },
+            {
+                question: 'Which symbol is used for single-line comments in Python?',
+                code: null,
+                options: ['//', '/*', '#', '<!--'],
+                answer: 2
+            },
+            {
+                question: 'What keyword is used to start an if statement condition branch?',
+                code: null,
+                options: ['if', 'when', 'check', 'case'],
+                answer: 0
+            },
+            {
+                question: 'What is the boolean result of 10 > 5?',
+                code: 'print(10 > 5)',
+                options: ['True', 'False', '1', 'None'],
+                answer: 0
+            },
+            {
+                question: 'How do you determine the total length of a list in Python?',
+                code: 'items = [1, 2, 3, 4]',
+                options: ['items.length()', 'len(items)', 'items.size()', 'count(items)'],
+                answer: 1
+            },
+            {
+                question: 'What is the correct syntax to output "Hello World" in Python?',
+                code: null,
+                options: ['print("Hello World")', 'p("Hello World")', 'System.out.println("Hello World")', 'Console.WriteLine("Hello World")'],
+                answer: 0
+            },
+            {
+                question: 'What will be the output of the following Python code block?',
+                code: 'x = [1, 2, 3]\ny = x\ny.append(4)\nprint(x)',
+                options: ['[1, 2, 3]', '[1, 2, 3, 4]', '[4, 1, 2, 3]', 'AttributeError'],
+                answer: 1
+            },
+            {
+                question: 'Which of the following data types is immutable in Python?',
+                code: null,
+                options: ['List ([ ])', 'Dictionary ({ })', 'Tuple (( ))', 'Set ({ })'],
+                answer: 2
+            },
+            {
+                question: 'What does the `is` operator evaluate in Python?',
+                code: 'a = [1, 2]\ b = [1, 2]\nprint(a is b)',
+                options: ['Value equality', 'Object identity (memory location)', 'Data type compatibility', 'Length comparison'],
+                answer: 1
+            },
+            {
+                question: 'What is the output of this list comprehension with sliced stepping?',
+                code: 'nums = [1, 2, 3, 4, 5, 6]\nres = [x**2 for x in nums[::-2]]\nprint(res)',
+                options: ['[36, 16, 4]', '[1, 9, 25]', '[36, 16, 4, 0]', '[1, 4, 9, 16, 25, 36]'],
+                answer: 0
+            },
+            {
+                question: 'What will this function decorator pattern output?',
+                code: 'def outer(func):\n    def inner():\n        return func() * 2\n    return inner\n\n@outer\ndef get_number():\n    return 5\n\nprint(get_number())',
+                options: ['5', '10', '25', 'TypeError'],
+                answer: 1
+            },
+            {
+                question: 'What is the default return value of a Python function that does not contain a `return` statement?',
+                code: 'def test_func():\n    pass\n\nresult = test_func()\nprint(result)',
+                options: ['0', 'False', 'None', 'Undefined'],
+                answer: 2
+            },
+            {
+                question: 'How does LEGB variable scope hierarchy resolve variables in Python?',
+                code: null,
+                options: [
+                    'Local -> Enclosing -> Global -> Built-in',
+                    'List -> Element -> Group -> Base',
+                    'Local -> External -> Group -> Built-in',
+                    'Logical -> Executive -> Global -> Base'
+                ],
+                answer: 0
+            },
+            {
+                question: 'What is the result of evaluating the dictionary unpacking expression below?',
+                code: 'd1 = {"a": 1, "b": 2}\nd2 = {"b": 99, "c": 4}\nmerged = {**d1, **d2}\nprint(merged["b"])',
+                options: ['2', '99', 'KeyError', '[2, 99]'],
+                answer: 1
+            },
+            {
+                question: 'What is the result of integer division operator (//) for negative numbers?',
+                code: 'print(-7 // 2)',
+                options: ['-3', '-3.5', '-4', '3'],
+                answer: 2
+            },
+            {
+                question: 'What happens when you try to access a key that does not exist in a dictionary using brackets?',
+                code: 'd = {"a": 1}\nprint(d["b"])',
+                options: ['None', '0', 'KeyError', 'False'],
+                answer: 2
+            },
+            {
+                question: 'What will be printed by the string slicing below?',
+                code: 's = "Python"\nprint(s[1:4])',
+                options: ['Pyt', 'yth', 'ytho', 'Pyth'],
+                answer: 1
+            },
+            {
+                question: 'What is the output of boolean evaluation in the code snippet?',
+                code: 'print(bool([]) or bool("0"))',
+                options: ['True', 'False', 'None', 'Error'],
+                answer: 0
+            },
+            {
+                question: 'What statement is used to immediately exit a loop prematurely?',
+                code: null,
+                options: ['exit', 'stop', 'break', 'return'],
+                answer: 2
+            },
+            {
+                question: 'Which method removes and returns the last element from a Python list?',
+                code: 'items = [10, 20, 30]',
+                options: ['items.remove()', 'items.delete()', 'items.pop()', 'items.extract()'],
+                answer: 2
+            },
+            {
+                question: 'What will the set creation code output?',
+                code: 's = set([1, 2, 2, 3, 3, 3])\nprint(len(s))',
+                options: ['6', '3', '1', 'TypeError'],
+                answer: 1
+            }
+        ]; /*End of the questions*/
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer = null;
+        let timeLeft = 20; /*Timer has real logic*/
+        let hasAnswered = false;
+
+
+        const startScreen = document.getElementById('startScreen');
+        const quizScreen = document.getElementById('quizScreen');
+        const resultsScreen = document.getElementById('resultsScreen');
+        const headerStats = document.getElementById('headerStats');
+
+        function startQuiz() {
+            currentQuestions = [...questionBank]
+                .sort(() => Math.random() - 0.5) /*Random Questions*/
+                .slice(0, 8);
+
+            currentQuestionIndex = 0;
+
+            score = 0;
+
+            startScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            headerStats.classList.remove('opacity-0');
+
+
+            loadQuestion();
+        }
+
+        function goToStartScreen() {
+            clearInterval(timer);
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+
+            headerStats.classList.add('opacity-0');
+        }
+
+        function loadQuestion() {
+
+
+            hasAnswered = false;
+            clearInterval(timer);
+            timeLeft = 20;
+
+
+
+            const q = currentQuestions[currentQuestionIndex];
+
+            document.getElementById('questionCounter').textContent = `${currentQuestionIndex + 1} / ${currentQuestions.length}`;
+            document.getElementById('questionCounterHeader').textContent = `${currentQuestionIndex + 1} / ${currentQuestions.length}`;
+            document.getElementById('scoreDisplay').textContent = score;
+
+            const progressPercent = ((currentQuestionIndex) / currentQuestions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+            document.getElementById('questionText').textContent = q.question;
+
+            const codeContainer = document.getElementById('codeContainer');
+            const codeSnippet = document.getElementById('codeSnippet');
+            if (q.code) {
+                codeSnippet.textContent = q.code;
+                codeContainer.classList.remove('hidden');
+            } else {
+                codeContainer.classList.add('hidden');
+            }
+
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = true;
+            nextBtn.classList.remove('bg-yellow-500', 'text-slate-950');
+            nextBtn.classList.add('bg-slate-800', 'text-slate-500');
+
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full p-2 rounded-xl text-left font-code text-xs text-slate-200 flex items-center justify-between border transition-all';
+                btn.innerHTML = `
+                    <span class="flex items-center space-x-2">
+                        <span class="w-4 h-4 rounded bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center text-[10px] font-bold">${String.fromCharCode(65 + idx)}</span>
+                        <span>${escapeHtml(opt)}</span>
+                    </span>
+                    <i class="fa-regular fa-circle text-slate-600 status-icon text-xs"></i>
+                `;
+                btn.onclick = () => selectOption(idx);
+                optionsContainer.appendChild(btn);
+            });
+
+            startQuestionTimer(); /*starting of timer*/
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function startQuestionTimer() {
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.textContent = `${timeLeft}s`;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `${timeLeft}s`;
+
+                if (timeLeft <= 5) {
+                    timerDisplay.classList.add('text-red-400'); /*Red alert, low time!*/
+                } else {
+                    timerDisplay.classList.remove('text-red-400');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function handleTimeout() {
+            if (hasAnswered) return;
+            hasAnswered = true;
+
+            const q = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.option-btn');
+
+            buttons.forEach(btn => btn.disabled = true);
+            buttons[q.answer].classList.add('correct');
+
+            enableNextButton(); /*Go to next if correct*/
+        }
+
+        function selectOption(index) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+            clearInterval(timer);
+
+            const q = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.option-btn');
+
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (index === q.answer) {
+                buttons[index].classList.add('correct');
+                buttons[index].querySelector('.status-icon').className = 'fa-solid fa-circle-check text-green-400 text-xs';
+                score += 10;
+                document.getElementById('scoreDisplay').textContent = score;
+            } else {
+                buttons[index].classList.add('incorrect');
+                buttons[index].querySelector('.status-icon').className = 'fa-solid fa-circle-xmark text-red-400 text-xs';
+
+                buttons[q.answer].classList.add('correct');
+                buttons[q.answer].querySelector('.status-icon').className = 'fa-solid fa-circle-check text-green-400 text-xs';
+            }
+
+            enableNextButton(); /*Also can go next if wrong answer*/
+        }
+
+        function enableNextButton() {
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('bg-slate-800', 'text-slate-500');
+            nextBtn.classList.add('bg-yellow-500', 'text-slate-950', 'hover:bg-yellow-400');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < currentQuestions.length) {
+                loadQuestion(); /*Yes, load new question*/
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            clearInterval(timer);
+
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+
+            const total = currentQuestions.length;
+            const correct = score / 10;
+            const percentage = Math.round((correct / total) * 100);
+
+            document.getElementById('finalScore').textContent = `${correct}/${total}`;
+            document.getElementById('finalPercentage').textContent = `${percentage}% Correct`;
+
+            const rankTitle = document.getElementById('rankTitle');
+
+            if (percentage === 80) { /*Haha A+*/
+                rankTitle.textContent = 'Python Master';
+            } else if (percentage >= 40) {
+                rankTitle.textContent = 'Snake Charmer'; /*Passed*/
+            } else {
+                rankTitle.textContent = 'Python Novice';/*Failed*/
+            }
+        }
+    </script>
+</body>
+
+</html>

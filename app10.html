@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick search</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="search.css">
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-sm flex flex-col gap-4">
+
+        <!-- Heading -->
+        <h1 class="text-xl font-normal text-white">Quick search</h1>
+
+        <!-- Search Input -->
+        <input type="text" id="searchInput" placeholder="Search the web"
+            class="w-full bg-[#121212] border border-zinc-700 text-white placeholder-zinc-500 text-base rounded-xl px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors">
+
+        <!-- Search Button -->
+        <button id="searchBtn"
+            class="w-fit bg-[#1a1a1a] hover:bg-[#262626] text-white font-medium px-6 py-2.5 rounded-xl border border-zinc-700 transition-colors cursor-pointer text-sm">
+            Search
+        </button>
+
+        <!-- Helper Text -->
+        <div class="text-zinc-500 text-xs mt-1">
+            Search opens in a new browser tab.
+        </div>
+
+    </div>
+
+    <script src="search.js"></script>
+
+
+</body>
+
+</html>
